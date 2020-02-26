@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+      		<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    	</encoder>
+        <!--滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--路径-->
+            <fileNamePattern>/var/log/cuss/translation/info.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <!--滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--路径-->
+            <fileNamePattern>/var/log/cuss/translation/error.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    
+<!--     <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
+		<connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
+			<driverClass>com.mysql.jdbc.Driver</driverClass>
+			<url>jdbc:mysql://xxxx:3306/log?useUnicode=true&amp;characterEncoding=UTF-8</url>
+			<user>root</user>
+			<password>root</password>
+		</connectionSource>
+	</appender>
+	
+	 <appender name ="ASYNC" class= "ch.qos.logback.classic.AsyncAppender">  
+            不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志  
+            <discardingThreshold >0</discardingThreshold>  
+            更改默认的队列的深度,该值会影响性能.默认值为256  
+            <queueSize>512</queueSize>  
+            添加附加的appender,最多只能添加一个  
+         <appender-ref ref ="DB"/>  
+     </appender>   -->
+    
+    <root level="info">
+        <appender-ref ref="consoleLog" />
+    </root>
+    
+    <logger name="com.alibaba.druid" level="error" additivity="false">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileErrorLog" />
+	</logger>
+	
+	<logger name="org.springframework" level="error" additivity="false">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileErrorLog" />
+	</logger>
+	
+	<logger name="org.hibernate" level="error" additivity="false">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileErrorLog" />
+	</logger>
+	
+	<logger name="org.apache" level="error" additivity="false">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileErrorLog" />
+	</logger>
+	
+	<logger name="com.example.demo" level="debug" additivity="false">
+	    <appender-ref ref="fileInfoLog" />
+		<appender-ref ref="fileErrorLog" />
+		<appender-ref ref="consoleLog" />
+		<!-- <appender-ref ref="ASYNC" /> -->
+	</logger>
+    
+</configuration>
