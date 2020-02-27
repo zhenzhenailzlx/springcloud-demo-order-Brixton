@@ -82,8 +82,7 @@ public class OrderController {
 						return ""; 
 					}
 				});
-		resutl =  task.get(5, TimeUnit.SECONDS);
-		
+		resutl =  task.get(5, TimeUnit.SECONDS);		
 		return resutl;
 	}
 	
