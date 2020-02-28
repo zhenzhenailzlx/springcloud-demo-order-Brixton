@@ -8,6 +8,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -30,6 +35,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.FutureRequestExecutionService;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -39,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+
 public class HttpConnectionManager4 {
 	private static final Logger log = LoggerFactory.getLogger(HttpConnectionManager4.class);
 	static final int maxTotal = 2048; // 最大连接数
@@ -46,8 +53,98 @@ public class HttpConnectionManager4 {
 	private final static Object syncLock = new Object();
 	private final static ConcurrentMap<String, PoolingHttpClientConnectionManager> map = new ConcurrentHashMap<String, PoolingHttpClientConnectionManager>();
 	private final static ConcurrentMap<String, CloseableHttpClient> clientmap = new ConcurrentHashMap<String, CloseableHttpClient>();
+	private final static ConcurrentMap<String, FutureRequestExecutionService> futureRequestExecutionServiceMap = new ConcurrentHashMap<String, FutureRequestExecutionService>();
 	private static PoolingHttpClientConnectionManager cm;// 创建连接池
 	private static CloseableHttpClient httpClient;
+	private static FutureRequestExecutionService futureRequestExecutionService;
+	
+	private static ExecutorService executorService;
+
+	static {
+		executorService = new ThreadPoolExecutor(20, 30, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(500));
+	}
+	
+	public static FutureRequestExecutionService getFutureRequestExecutionService() {
+		String timeType = "5";// 超时类型
+		String code = "wgec";// 接口code
+		String mapKey = code + "_" + timeType;
+		if (futureRequestExecutionServiceMap.get(mapKey) == null) {
+			synchronized (syncLock) {
+				if (futureRequestExecutionServiceMap.get(mapKey) == null) {
+					RequestConfig requestConfig = null;
+                    if ("5" == timeType || "5".equals(timeType)) {
+                        requestConfig = RequestConfig.custom().setConnectTimeout(2000).setConnectionRequestTimeout(1000).setSocketTimeout(4000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+                        log.info("接口类型：4s");
+                    }else if ("4" == timeType || "4".equals(timeType)) {
+						requestConfig = RequestConfig.custom().setConnectTimeout(2000).setConnectionRequestTimeout(1000).setSocketTimeout(20000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+                        log.info("接口类型：超级慢");
+					} else if ("3" == timeType || "3".equals(timeType)) {
+						requestConfig = RequestConfig.custom().setConnectTimeout(2000).setConnectionRequestTimeout(1000).setSocketTimeout(10000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+						log.info("接口类型：慢");
+					} else if ("2" == timeType || "2".equals(timeType)) {
+						requestConfig = RequestConfig.custom().setConnectTimeout(2000).setConnectionRequestTimeout(1000).setSocketTimeout(5000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+						log.info("接口类型：中");
+					} else if ("1" == timeType || "1".equals(timeType)) {
+						requestConfig = RequestConfig.custom().setConnectTimeout(2000).setConnectionRequestTimeout(1000).setSocketTimeout(3000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+						log.info("接口类型：快");
+					} else if ("0" == timeType || "0".equals(timeType)) {
+						requestConfig = RequestConfig.custom().setConnectTimeout(1000).setConnectionRequestTimeout(1000).setSocketTimeout(1000).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+						log.info("接口类型：特别快");
+                    } else if ("-1" == timeType || "-1".equals(timeType)) {
+                        requestConfig = RequestConfig.custom().setConnectTimeout(1).setConnectionRequestTimeout(1).setSocketTimeout(1).setCookieSpec(CookieSpecs.BEST_MATCH).build();//
+                        log.info("测试报警");
+                    }
+
+					// 请求重试处理
+					HttpRequestRetryHandler httpRequestRetryHandler = new HttpRequestRetryHandler() {
+						public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+							if (executionCount >= 3) {// 如果已经重试了5次，就放弃
+								return false;
+							}
+							if (exception instanceof org.apache.http.NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
+								return true;
+							}
+							if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
+								return false;
+							}
+							if (exception instanceof InterruptedIOException) {// 超时
+								return false;
+							}
+							if (exception instanceof UnknownHostException) {// 目标服务器不可达
+								return false;
+							}
+							if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
+								return false;
+							}
+							if (exception instanceof SSLException) {// SSL握手异常
+								return false;
+							}
+
+							HttpClientContext clientContext = HttpClientContext.adapt(context);
+							HttpRequest request = clientContext.getRequest();
+							// 如果请求是幂等的，就再次尝试
+							if (!(request instanceof HttpEntityEnclosingRequest)) {
+								return true;
+							}
+							return false;
+						}
+					};
+
+					// 声明重定向策略对象
+					LaxRedirectStrategy redirectStrategy = new LaxRedirectStrategy();
+					PoolingHttpClientConnectionManager connManager = getPool(code);
+					HttpClientBuilder clientBuilder = HttpClients.custom().setConnectionManager(connManager).setDefaultRequestConfig(requestConfig);
+                    // 清除失效链接
+					clientBuilder.evictExpiredConnections().evictIdleConnections(30, TimeUnit.SECONDS);
+					httpClient = clientBuilder.setRedirectStrategy(redirectStrategy).setRetryHandler(httpRequestRetryHandler).build();
+					futureRequestExecutionService = new FutureRequestExecutionService(httpClient, executorService);
+					futureRequestExecutionServiceMap.put(mapKey, futureRequestExecutionService);
+					log.debug(code + "接口【" + timeType + "】等级速度:CloseableHttpClient客户端初始化……");
+				}
+			}
+		}
+		return futureRequestExecutionServiceMap.get(mapKey);
+	}
 
 	private static PoolingHttpClientConnectionManager getPool(String code) {
 		if (map.get(code) == null) {

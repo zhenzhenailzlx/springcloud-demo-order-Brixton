@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -42,13 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderController {
 	
-	private static ExecutorService executorService;
 	
-	static {
-		//executorPool = new ThreadPoolExecutor(100, 500, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1200));
-		executorService = Executors.newFixedThreadPool(200);
-		//return new ThreadPoolExecutor(nThreads, nThreads,0L, TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>());
-	}
+
 	
 	@RequestMapping("/getOrder")
 	public Map<String,Object> getOrder() {
@@ -63,11 +60,10 @@ public class OrderController {
 	@RequestMapping("/getUserInfo")
 	public String getUserInfo() throws ParseException, IOException, InterruptedException, ExecutionException, TimeoutException {
 		String resutl = "{}";
-		CloseableHttpClient httpClient = HttpConnectionManager4.getHttpClient();
 		// 构建HttpMethod
 		String url = "http://10.20.9.118:8000/getUser";
 		HttpGet method = new HttpGet(url);
-		FutureRequestExecutionService futureRequestExecutionService = new FutureRequestExecutionService(httpClient, executorService);
+		FutureRequestExecutionService futureRequestExecutionService = HttpConnectionManager4.getFutureRequestExecutionService();
 		
 		HttpRequestFutureTask<String> task = futureRequestExecutionService.execute(method, HttpClientContext.create(),
 				new ResponseHandler<String>() {
