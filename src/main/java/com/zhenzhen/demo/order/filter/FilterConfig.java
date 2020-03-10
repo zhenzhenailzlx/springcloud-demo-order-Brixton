@@ -12,7 +12,7 @@ public class FilterConfig {
 
 	@Bean
     public FilterRegistrationBean sentinelFilterRegistration() {
-        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+        FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(new CommonFilter());
         registration.addUrlPatterns("/*");
         registration.setName("sentinelFilter");

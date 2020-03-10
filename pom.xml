@@ -2,28 +2,50 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
+	<!-- <parent>
     	<groupId>org.springframework.boot</groupId>
     	<artifactId>spring-boot-starter-parent</artifactId>
     	<version>2.0.0.RELEASE</version>
-    	<relativePath /> <!-- lookup parent from repository -->
-    </parent>
+    	<relativePath /> lookup parent from repository
+    </parent> -->
 	<groupId>com.zhenzhen.demo</groupId>
 	<artifactId>springcloud-demo-order-Brixton</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>springcloud-demo-order-Brixton</name>
 
-	<properties>
+	<!-- <properties>
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
+	</properties> -->
+	
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.9.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	
+	<properties>
+		<java.version>1.8</java.version>
+		<spring-cloud.version>Brixton.RELEASE</spring-cloud.version>
 	</properties>
 
 	<dependencies>
 		
 		<dependency>
-	    	<groupId>org.springframework.cloud</groupId>
-	    	<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
+		</dependency>
+		
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-actuator</artifactId>
 	    </dependency>
+	    
+	    <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-ribbon</artifactId>
+        </dependency>
 		
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
@@ -42,11 +64,15 @@
 		    <version>1.6.3</version>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/com.alibaba.cloud/spring-cloud-starter-alibaba-sentinel -->
 		<dependency>
 		    <groupId>com.alibaba.cloud</groupId>
 		    <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
 		    <version>1.5.0.RELEASE</version>
 		</dependency>
+
+
+
 
 	    
 	    <dependency>
@@ -65,7 +91,7 @@
     		<dependency>
     			<groupId>org.springframework.cloud</groupId>
     			<artifactId>spring-cloud-dependencies</artifactId>
-    			<version>Finchley.RELEASE</version>
+    			<version>Edgware.RELEASE</version>
     			<type>pom</type>
     			<scope>import</scope>
     		</dependency>
