@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.zhenzhen.demo.order.service.OrderService;
 import com.zhenzhen.demo.order.util.HttpConnectionManager4;
 
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,9 @@ public class OrderController {
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private OrderService orderService;
 
 	
 	@RequestMapping("/getOrder")
@@ -60,28 +64,8 @@ public class OrderController {
 	}
 	
 	@RequestMapping("/getUserInfoFutureRequest")
-	public String getUserInfoFutureRequest() throws ParseException, IOException, InterruptedException, ExecutionException, TimeoutException {
-		String resutl = "{}";
-		// 构建HttpMethod
-		String url = "http://10.20.9.118:8000/getUser";
-		HttpGet method = new HttpGet(url);
-		FutureRequestExecutionService futureRequestExecutionService = HttpConnectionManager4.getFutureRequestExecutionService();
-		
-		HttpRequestFutureTask<String> task = futureRequestExecutionService.execute(method, HttpClientContext.create(),
-				new ResponseHandler<String>() {
-
-					@Override
-					public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-						if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-							HttpEntity entity = response.getEntity();// 调用getEntity()方法获取到一个HttpEntity实例
-							return EntityUtils.toString(entity, "utf-8");
-
-						}
-						return ""; 
-					}
-				});
-		resutl =  task.get(5, TimeUnit.SECONDS);		
-		return resutl;
+	public String getUserInfoFutureRequest() throws Exception {
+		return orderService.getUserInfoFutureRequest();
 	}
 	
 	
