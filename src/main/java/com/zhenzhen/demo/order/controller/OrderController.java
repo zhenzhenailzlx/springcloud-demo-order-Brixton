@@ -7,14 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -23,18 +18,18 @@ import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.FutureRequestExecutionService;
 import org.apache.http.impl.client.HttpRequestFutureTask;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.zhenzhen.demo.order.util.HttpConnectionManager4;
 
@@ -44,7 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderController {
 	
-	
+	@Autowired
+	private RestTemplate restTemplate;
 
 	
 	@RequestMapping("/getOrder")
@@ -57,8 +53,14 @@ public class OrderController {
 		 return userMap;
 	}
 	
-	@RequestMapping("/getUserInfo")
-	public String getUserInfo() throws ParseException, IOException, InterruptedException, ExecutionException, TimeoutException {
+	@RequestMapping("/getUserInfoRibbon")
+	public String getUserInfoRibbon() {
+		log.info("I am in getUserInfoRibbon");
+		return restTemplate.getForObject("http://USER/getUser", String.class);
+	}
+	
+	@RequestMapping("/getUserInfoFutureRequest")
+	public String getUserInfoFutureRequest() throws ParseException, IOException, InterruptedException, ExecutionException, TimeoutException {
 		String resutl = "{}";
 		// 构建HttpMethod
 		String url = "http://10.20.9.118:8000/getUser";
