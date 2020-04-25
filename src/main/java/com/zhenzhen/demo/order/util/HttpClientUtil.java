@@ -1,31 +1,23 @@
 package com.zhenzhen.demo.order.util;
 
-import org.apache.http.Consts;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.*;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 
 public class HttpClientUtil {
-
-
-
+	
 	public static ClientHttpRequestFactory createClientHttpRequestFactory() {
 		// 长连接保持30秒
 		PoolingHttpClientConnectionManager pollingConnectionManager = new PoolingHttpClientConnectionManager(60,
@@ -51,6 +43,9 @@ public class HttpClientUtil {
 		headers.add(new BasicHeader("Keep-Alive", "120"));
 
 		httpClientBuilder.setDefaultHeaders(headers);
+		
+		//定时清理失败连接
+		httpClientBuilder.evictExpiredConnections().evictIdleConnections(30, TimeUnit.SECONDS);
 
 		HttpClient httpClient = httpClientBuilder.build();
 		// httpClient连接配置，底层是配置RequestConfig
@@ -66,45 +61,4 @@ public class HttpClientUtil {
 		clientHttpRequestFactory.setBufferRequestBody(true);
 		return clientHttpRequestFactory;
 	}
-
-
-	/**
-	 * 创建HttpClient
-	 *
-	 * @param isMultiThread
-	 * @return
-	 */
-	public static HttpClient buildHttpClient(boolean isMultiThread) {
-		CloseableHttpClient client;
-		if (isMultiThread) {
-			client = HttpClientBuilder.create().setConnectionManager(new PoolingHttpClientConnectionManager()).build();
-		} else {
-			client = HttpClientBuilder.create().build();
-		}
-		return client;
-	}
-
-	/**
-	 * 构建httpPost对象
-	 *
-	 * @param url
-	 * @param params
-	 * @return
-	 */
-	public static HttpPost buildFormHttpPost(String url, Map<String, String> params) {
-		HttpPost post = new HttpPost(url);
-		HttpEntity entity = null;
-		if (params != null) {
-			List<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
-			for (String key : params.keySet()) {
-				nameValuePair.add(new BasicNameValuePair(key, params.get(key)));
-			}
-			entity = new UrlEncodedFormEntity(nameValuePair, Consts.UTF_8);
-			post.setEntity(entity);
-		}
-		return post;
-	}
-
-
-
 }

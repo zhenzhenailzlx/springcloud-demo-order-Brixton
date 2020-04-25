@@ -7,7 +7,6 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
 import com.zhenzhen.demo.order.util.HttpClientUtil;
 
 @SpringBootApplication
@@ -16,7 +15,6 @@ public class OrderApplication {
 	
 	@Bean
     @LoadBalanced
-    @SentinelRestTemplate
     RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate(HttpClientUtil.createClientHttpRequestFactory());
         return restTemplate;
@@ -25,5 +23,7 @@ public class OrderApplication {
 	public static void main(String[] args) {
 		 new SpringApplicationBuilder(OrderApplication.class).web(true).run(args);
 	}
+	
+
 
 }
