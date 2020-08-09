@@ -76,7 +76,7 @@
 		<appender-ref ref="fileErrorLog" />
 	</logger>
 	
-	<logger name="com.example.demo" level="debug" additivity="false">
+	<logger name="com.zhenzhen.demo" level="debug" additivity="false">
 	    <appender-ref ref="fileInfoLog" />
 		<appender-ref ref="fileErrorLog" />
 		<appender-ref ref="consoleLog" />
