@@ -1,8 +1,8 @@
 package com.zhenzhen.demo.order.controller;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -21,9 +21,20 @@ public class OrderController {
 	}
 	
 	@RequestMapping("/getUserInfoRibbon")
-	@Transactional
 	public String getUserInfoRibbon() {
+
 		return restTemplate.getForObject("http://USER/getUser", String.class);
+	}
+
+	@RequestMapping("/getUserSleepRibbon")
+	@HystrixCommand(fallbackMethod = "defaultStores")
+	public String getUserSleepRibbon(String time) {
+
+		return restTemplate.getForObject("http://USER/sleep?time="+time, String.class);
+	}
+
+	public String defaultStores(String time) {
+		return "服务发生降级";
 	}
 	
 	

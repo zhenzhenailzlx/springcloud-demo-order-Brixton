@@ -52,9 +52,9 @@ public class HttpClientUtil {
 		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
 				httpClient);
 		// 连接超时
-		clientHttpRequestFactory.setConnectTimeout(5000);
-		// 数据读取超时时间，即SocketTimeout
-		clientHttpRequestFactory.setReadTimeout(5000);
+		clientHttpRequestFactory.setConnectTimeout(10000);
+//		// 数据读取超时时间，即SocketTimeout
+		clientHttpRequestFactory.setReadTimeout(10000);
 		// 连接不够用的等待时间，不宜过长，必须设置，比如连接不够用时，时间过长将是灾难性的
 		clientHttpRequestFactory.setConnectionRequestTimeout(5000);
 		// 缓冲请求数据，默认值是true。通过POST或者PUT大量发送数据时，建议将此属性更改为false，以免耗尽内存。

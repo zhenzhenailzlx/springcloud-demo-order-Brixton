@@ -1,14 +1,14 @@
 package com.zhenzhen.demo.order;
 
 import com.zhenzhen.demo.order.util.HttpClientUtil;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootApplication
+@SpringCloudApplication
 @EnableEurekaClient
 public class OrderApplication {
 	
@@ -16,6 +16,8 @@ public class OrderApplication {
     @LoadBalanced
     RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate(HttpClientUtil.createClientHttpRequestFactory());
+
+
         return restTemplate;
     }
 
