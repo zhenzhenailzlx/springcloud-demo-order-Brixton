@@ -19,8 +19,8 @@ eureka:
     instance-info-replication-interval-seconds: 20
     initial-instance-info-replication-interval-seconds: 30
     serviceUrl:
-      #defaultZone: http://localhost:8761/eureka/
-      defaultZone: http://eureka0:8000/eureka/,http://eureka1:8001/eureka/,http://eureka2:8002/eureka/
+      defaultZone: http://localhost:8761/eureka/
+      #defaultZone: http://eureka0:8000/eureka/,http://eureka1:8001/eureka/,http://eureka2:8002/eureka/
       
 ribbon:
   #ribbon负载均衡器通过NIWSDiscoveryPing 检测可用服务的频率，默认30s
